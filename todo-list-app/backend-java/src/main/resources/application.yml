@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: to-do-list-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/local?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8
+    username: root
+    password:
+  devtools:
+    restart:
+      enabled: true              # 开启热重启（默认true）
+      additional-paths: src/main/java  # 监控的额外目录
+      exclude: static/**,public/**   # 排除静态资源目录
+
+# MyBatis Plus 配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml  # Mapper XML 文件路径
+  type-aliases-package: cn.lim.todolistservice.entity  # 实体类包路径
+  global-config:
+    db-config:
+      id-type: auto  # 主键自增策略
+      table-prefix: ""  # 表名前缀（如果有）
+      logic-delete-field: is_deleted  # 逻辑删除字段
+      logic-delete-value: 1  # 逻辑删除值
+      logic-not-delete-value: 0  # 逻辑未删除值
+  configuration:
+    map-underscore-to-camel-case: true  # 开启驼峰命名转换
+    call-setters-on-nulls: true  # 在映射结果时调用 setter
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.baomidou.mybatisplus: DEBUG  # MyBatis Plus 调试日志
+    org.mybatis: DEBUG  # 查看 SQL 绑定详情
+    cn.lim.todolistservice.mapper: TRACE  # 跟踪具体 Mapper 方法
+

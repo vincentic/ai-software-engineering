@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd todo-list-app/frontend && npm install && npm run build",
+  "outputDirectory": "todo-list-app/frontend/.next",
+  "framework": "nextjs",
+  "installCommand": "cd todo-list-app/frontend && npm install"
+}

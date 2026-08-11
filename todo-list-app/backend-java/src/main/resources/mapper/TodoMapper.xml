@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.lim.todolistservice.mapper.TodoMapper">
+    <!-- MyBatis Plus 自动提供 CRUD 操作，此文件可保留用于自定义复杂查询 -->
+    <!-- 使用 BaseMapper 继承获得标准 CRUD 方法，无需在此重复定义 -->
+    <select id="selectOwnTasklist">
+        SELECT *
+        FROM todo_list
+        WHERE 1=1 AND is_deleted = 0
+    </select>
+
+    <!-- 自定义逻辑删除：将 is_deleted 字段置为 1 -->
+    <update id="markDeleted" parameterType="string">
+        UPDATE todo_list
+        SET is_deleted = 1
+        WHERE todo_id = #{todoId}
+    </update>
+</mapper>
