@@ -1,17 +1,17 @@
 import { Todo, ApiResponse } from "../types/todo";
 
 export async function getTodos(): Promise<ApiResponse<Todo[]>> {
-  const res = await fetch("http://localhost:3001/api/todo/list");
+  const res = await fetch("/api/todo/list");
   return await res.json();
 }
 
 export async function getTodo(id: string): Promise<ApiResponse<Todo>> {
-  const res = await fetch(`http://localhost:3001/api/todo/${id}`);
+  const res = await fetch(`/api/todo/${id}`);
   return await res.json();
 }
 
 export async function addTodo(todo: Partial<Todo>): Promise<ApiResponse<boolean>> {
-  const res = await fetch("http://localhost:3001/api/todo/add", {
+  const res = await fetch("/api/todo/add", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(todo),
@@ -20,7 +20,7 @@ export async function addTodo(todo: Partial<Todo>): Promise<ApiResponse<boolean>
 }
 
 export async function updateTodo(id: string, todo: Partial<Todo>): Promise<ApiResponse<boolean>> {
-  const res = await fetch(`http://localhost:3001/api/todo/update/${id}`, {
+  const res = await fetch(`/api/todo/update/${id}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(todo),
@@ -29,6 +29,6 @@ export async function updateTodo(id: string, todo: Partial<Todo>): Promise<ApiRe
 }
 
 export async function deleteTodo(id: string): Promise<ApiResponse<boolean>> {
-  const res = await fetch(`http://localhost:3001/api/todo/delete/${id}`);
+  const res = await fetch(`/api/todo/delete/${id}`);
   return await res.json();
 }

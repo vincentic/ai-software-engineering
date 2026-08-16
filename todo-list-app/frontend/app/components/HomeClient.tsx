@@ -1,12 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddTodo from "./AddTodo";
 import { addTodo, getTodos, deleteTodo, updateTodo, getTodo } from "../services/todoService";
 import { Todo } from "../types/todo";
 
 
-export default function HomeClient({ initialTodos }: { initialTodos: Todo[] }) {
-  const [todos, setTodos] = useState<Todo[]>(initialTodos);
+export default function HomeClient() {
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [viewingId, setViewingId] = useState<string | null>(null);
@@ -14,7 +14,6 @@ export default function HomeClient({ initialTodos }: { initialTodos: Todo[] }) {
   const [editValue, setEditValue] = useState<string>("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  // centralised refresh helper to avoid repeated code
   const refreshTodos = async () => {
     try {
       const updatedTodos = await getTodos();
@@ -27,6 +26,10 @@ export default function HomeClient({ initialTodos }: { initialTodos: Todo[] }) {
     }
     return false;
   };
+
+  useEffect(() => {
+    void refreshTodos();
+  }, []);
 
   const handleToggleFinished = async (todoId: string, currentStatus: number) => {
     try {
