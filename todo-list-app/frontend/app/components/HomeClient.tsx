@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AddTodo from "./AddTodo";
 import { addTodo, getTodos, deleteTodo, updateTodo, getTodo } from "../services/todoService";
 import { Todo } from "../types/todo";
@@ -13,23 +13,40 @@ export default function HomeClient() {
   const [editId, setEditId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const refreshTodos = async () => {
+  const refreshTodos = useCallback(async () => {
     try {
       const updatedTodos = await getTodos();
       if (updatedTodos.code === 200 && Array.isArray(updatedTodos.data)) {
         setTodos(updatedTodos.data);
+        setError(null);
         return true;
       }
     } catch (err) {
       console.error("Error refreshing todos:", err);
     }
+    setError("Unable to load tasks. Please try again.");
     return false;
-  };
+  }, []);
 
   useEffect(() => {
-    void refreshTodos();
-  }, []);
+    let isMounted = true;
+
+    const loadTodos = async () => {
+      await refreshTodos();
+      if (isMounted) {
+        setIsInitialLoading(false);
+      }
+    };
+
+    void loadTodos();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshTodos]);
 
   const handleToggleFinished = async (todoId: string, currentStatus: number) => {
     try {
@@ -151,20 +168,29 @@ export default function HomeClient() {
         disabled={isLoading}
         isEditing={Boolean(editId)}
       />
-      <div className="w-160 min-h-80 mx-auto mt-2 p-4 bg-zinc-50 shadow-sm dark:bg-zinc-50 dark:border-zinc-50">
+      <div className="mx-auto mt-2 min-h-80 w-full max-w-3xl bg-zinc-50 p-4 shadow-sm dark:bg-zinc-50 dark:border-zinc-50">
         <h2 className="text-2xl font-semibold mb-6 text-zinc-800 dark:text-zinc-200 text-center">
           Your Tasks
         </h2>
+        {error && (
+          <div className="mb-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
         <ul className="mx-auto space-y-2">
-          {todos.length === 0 ? (
+          {isInitialLoading ? (
+            <li className="p-2 bg-white border border-zinc-300 shadow-sm dark:bg-zinc-800 dark:border-zinc-600">
+              Loading tasks...
+            </li>
+          ) : todos.length === 0 ? (
             <li className="p-2 bg-white border border-zinc-300 rounded-md shadow-sm dark:bg-zinc-800 dark:border-zinc-600">
               No tasks found.
             </li>
           ) : (
             todos.map((todo: Todo) => (
-              <li key={todo.todoId} className="w-full p-4 mx-auto flex-col bg-white border border-zinc-300 rounded-md shadow-sm dark:bg-zinc-800 dark:border-zinc-600">
-                <div className="flex justify-between items-start">
-                  <div className="flex w-full gap-4 items-center space-between">
+              <li key={todo.todoId} className="mx-auto w-full bg-white p-4 shadow-sm dark:bg-zinc-800 dark:border-zinc-600">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex min-w-0 flex-1 gap-4 items-center">
                     <input
                       type="checkbox"
                       checked={todo.isFinished === 1}
@@ -172,13 +198,13 @@ export default function HomeClient() {
                       disabled={togglingId === todo.todoId}
                       className="w-5 h-5 cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
-                    <div className={`font-semibold w-30 ${todo.isFinished === 1 ? 'line-through text-zinc-400' : ''}`}>
+                    <div className={`min-w-0 flex-1 break-words font-semibold ${todo.isFinished === 1 ? 'line-through text-zinc-400' : ''}`}>
                       {todo.todoName}
                     </div>
-                    <div className="w-25 text-sm text-zinc-500">Due: {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : "-"}</div>
-                    <div className="text-xs mt-1 ">{todo.isFinished ? "Finished" : "Pending"}</div>
+                    <div className="hidden text-sm text-zinc-500 sm:block">Due: {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : "-"}</div>
+                    <div className="hidden text-xs sm:block">{todo.isFinished ? "Finished" : "Pending"}</div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                     <button
                       onClick={() => handleView(todo.todoId)}
                       disabled={viewingId === todo.todoId}

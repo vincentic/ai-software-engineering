@@ -19,11 +19,11 @@ export default function AddTodo({ onAdd, value = "", onChange, onCancel, disable
   }
 
   return (
-    <div className="flex-col text-center px-4">
+    <div className="mx-auto flex w-full max-w-2xl flex-col px-4 text-center">
       <textarea
         value={value}
         onChange={(e) => onChange && onChange(e.target.value)}
-        className="w-160 h-20 p-4 border border-zinc-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:border-zinc-600 dark:text-zinc-200"
+        className="h-20 w-full resize-none border border-zinc-300 p-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:border-zinc-600 dark:text-zinc-200"
         placeholder="Write your tasks here..."
       />
       <div>
