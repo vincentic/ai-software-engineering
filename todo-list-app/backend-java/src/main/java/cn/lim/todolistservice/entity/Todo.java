@@ -25,45 +25,4 @@ public class Todo {
 
     @TableField("is_deleted")
     private Integer isDeleted;    // 删除情况 是=1 否=0
-
-    public String getTodoId() {
-        return todoId;
-    }
-
-    public void setTodoId(String todoId) {
-        this.todoId = todoId;
-    }
-
-    public String getTodoName() {
-        return todoName;
-    }
-
-    public void setTodoName(String todoName) {
-        this.todoName = todoName;
-    }
-
-    public Date getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(Date dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public Integer getIsFinished() {
-        return isFinished;
-    }
-
-    public void setIsFinished(Integer isFinished) {
-        this.isFinished = isFinished;
-    }
-
-    public Integer getIsDeleted() {
-        return isDeleted;
-    }
-
-    public void setIsDeleted(Integer isDeleted) {
-        this.isDeleted = isDeleted;
-    }
 }
-
