@@ -1,8 +1,11 @@
 package cn.lim.todolistservice.controller;
 
+import cn.lim.todolistservice.dto.TodoCreateRequest;
+import cn.lim.todolistservice.dto.TodoUpdateRequest;
 import cn.lim.todolistservice.entity.Todo;
 import cn.lim.todolistservice.entity.ApiResponse;
 import cn.lim.todolistservice.service.TodoService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +25,8 @@ public class TodoController {
     }
 
     @PostMapping("/add")
-    public ApiResponse<Boolean> add(@RequestBody Todo todo) {
+    public ApiResponse<Boolean> add(@Valid @RequestBody TodoCreateRequest request) {
+        Todo todo = request.toEntity();
         boolean result = todoService.addTodo(todo);
         if (result) {
             return ApiResponse.success(true);
@@ -32,8 +36,8 @@ public class TodoController {
     }
 
     @PostMapping("/update/{todoId}")
-    public ApiResponse<Boolean> update(@PathVariable String todoId, @RequestBody Todo todo) {
-        todo.setTodoId(todoId);
+    public ApiResponse<Boolean> update(@PathVariable String todoId, @Valid @RequestBody TodoUpdateRequest request) {
+        Todo todo = request.toEntity(todoId);
         boolean result = todoService.updateTodo(todo);
         if (result) {
             return ApiResponse.success(true);
