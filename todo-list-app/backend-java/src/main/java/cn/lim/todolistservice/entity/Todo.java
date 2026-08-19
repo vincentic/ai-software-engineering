@@ -23,6 +23,9 @@ public class Todo {
     @TableField("is_finished")
     private Integer isFinished;   // 完成情况 是=1 否=0
 
+    @TableField("completed_at")
+    private Date completedAt;     // 完成日期
+
     @TableField("is_deleted")
     private Integer isDeleted;    // 删除情况 是=1 否=0
 }

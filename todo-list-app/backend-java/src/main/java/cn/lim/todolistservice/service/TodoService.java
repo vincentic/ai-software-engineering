@@ -5,6 +5,7 @@ import cn.lim.todolistservice.mapper.TodoMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -47,6 +48,9 @@ public class TodoService extends ServiceImpl<TodoMapper, Todo> {
      * @return 是否成功
      */
     public boolean addTodo(Todo todo) {
+        if (Integer.valueOf(1).equals(todo.getIsFinished())) {
+            todo.setCompletedAt(new Date());
+        }
         return this.save(todo);  // 使用 MyBatis Plus 提供的 save() 方法
     }
 
@@ -56,6 +60,16 @@ public class TodoService extends ServiceImpl<TodoMapper, Todo> {
      * @return 是否成功
      */
     public boolean updateTodo(Todo todo) {
+        if (todo.getIsFinished() != null) {
+            Date completedAt = Integer.valueOf(1).equals(todo.getIsFinished()) ? new Date() : null;
+            return this.lambdaUpdate()
+                    .eq(Todo::getTodoId, todo.getTodoId())
+                    .set(todo.getTodoName() != null, Todo::getTodoName, todo.getTodoName())
+                    .set(todo.getDueDate() != null, Todo::getDueDate, todo.getDueDate())
+                    .set(Todo::getIsFinished, todo.getIsFinished())
+                    .set(Todo::getCompletedAt, completedAt)
+                    .update();
+        }
         return this.updateById(todo);  // 使用 MyBatis Plus 提供的 updateById() 方法
     }
 

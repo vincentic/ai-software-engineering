@@ -139,7 +139,7 @@ export default function HomeClient() {
       const res = await getTodo(todoId);
       if (res && res.code === 200 && res.data) {
         const t = res.data;
-        alert(`Task: ${t.todoName}\nDue: ${t.dueDate ? new Date(t.dueDate).toLocaleString() : '-'}\nStatus: ${t.isFinished ? 'Finished' : 'Pending'}`);
+        alert(`Task: ${t.todoName}\nDue: ${t.dueDate ? new Date(t.dueDate).toLocaleString() : '-'}\nStatus: ${t.isFinished ? 'Finished' : 'Pending'}\nCompleted: ${t.completedAt ? new Date(t.completedAt).toLocaleString() : '-'}`);
       } else {
         alert('Task not found.');
       }
@@ -202,7 +202,9 @@ export default function HomeClient() {
                       {todo.todoName}
                     </div>
                     <div className="hidden text-sm text-zinc-500 sm:block">Due: {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : "-"}</div>
-                    <div className="hidden text-xs sm:block">{todo.isFinished ? "Finished" : "Pending"}</div>
+                    <div className="hidden text-xs sm:block">
+                      {todo.isFinished ? `Finished${todo.completedAt ? ` ${new Date(todo.completedAt).toLocaleDateString()}` : ""}` : "Pending"}
+                    </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                     <button
