@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -56,5 +57,29 @@ class TodoControllerTest {
                 .andExpect(jsonPath("$.code").value(200))
                 .andExpect(jsonPath("$.data").value(true))
                 .andExpect(jsonPath("$.message").value("success"));
+    }
+
+    @Test
+    void updatePreservesDueDateWhenFieldIsMissing() throws Exception {
+        when(todoService.updateTodo(argThat(todo -> Boolean.FALSE.equals(todo.getDueDateProvided())))).thenReturn(true);
+
+        mockMvc.perform(post("/todo/update/todo-1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"todoName\":\"Write tests\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data").value(true));
+    }
+
+    @Test
+    void updateCanClearDueDateWhenFieldIsNull() throws Exception {
+        when(todoService.updateTodo(argThat(todo -> Boolean.TRUE.equals(todo.getDueDateProvided()) && todo.getDueDate() == null))).thenReturn(true);
+
+        mockMvc.perform(post("/todo/update/todo-1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"dueDate\":null}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data").value(true));
     }
 }

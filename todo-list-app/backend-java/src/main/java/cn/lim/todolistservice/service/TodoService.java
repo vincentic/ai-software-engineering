@@ -65,7 +65,7 @@ public class TodoService extends ServiceImpl<TodoMapper, Todo> {
             return this.lambdaUpdate()
                     .eq(Todo::getTodoId, todo.getTodoId())
                     .set(todo.getTodoName() != null, Todo::getTodoName, todo.getTodoName())
-                    .set(todo.getDueDate() != null, Todo::getDueDate, todo.getDueDate())
+                    .set(Boolean.TRUE.equals(todo.getDueDateProvided()), Todo::getDueDate, todo.getDueDate())
                     .set(Todo::getIsFinished, todo.getIsFinished())
                     .set(Todo::getCompletedAt, completedAt)
                     .update();

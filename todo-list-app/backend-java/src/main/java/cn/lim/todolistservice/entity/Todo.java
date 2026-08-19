@@ -20,6 +20,9 @@ public class Todo {
     @TableField("due_date")
     private Date dueDate;         // 截止日期
 
+    @TableField(exist = false)
+    private Boolean dueDateProvided; // 更新时是否显式传入截止日期
+
     @TableField("is_finished")
     private Integer isFinished;   // 完成情况 是=1 否=0
 
