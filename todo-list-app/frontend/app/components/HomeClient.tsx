@@ -218,12 +218,17 @@ export default function HomeClient() {
                       disabled={togglingId === todo.todoId}
                       className="w-5 h-5 cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
-                    <div className={`min-w-0 flex-1 break-words font-semibold ${todo.isFinished === 1 ? 'line-through text-zinc-400' : ''}`}>
-                      {todo.todoName}
+                    <div className="min-w-0 flex-1">
+                      <div className={`break-words font-semibold ${todo.isFinished === 1 ? 'line-through text-zinc-400' : ''}`}>
+                        {todo.todoName}
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-500">
+                        <span>Due: {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : "-"}</span>
+                        <span>Completed: {todo.completedAt ? new Date(todo.completedAt).toLocaleDateString() : "-"}</span>
+                      </div>
                     </div>
-                    <div className="hidden text-sm text-zinc-500 sm:block">Due: {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : "-"}</div>
                     <div className="hidden text-xs sm:block">
-                      {todo.isFinished ? `Finished${todo.completedAt ? ` ${new Date(todo.completedAt).toLocaleDateString()}` : ""}` : "Pending"}
+                      {todo.isFinished ? "Finished" : "Pending"}
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 sm:justify-end">
