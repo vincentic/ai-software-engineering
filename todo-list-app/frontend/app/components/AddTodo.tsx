@@ -40,28 +40,28 @@ export default function AddTodo({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col px-4 text-center">
+    <div className="ink-paper mx-auto flex w-full max-w-2xl flex-col px-4 py-4 text-center">
       <textarea
         value={value}
         onChange={(e) => onChange && onChange(e.target.value)}
-        className="h-20 w-full resize-none border border-zinc-300 p-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:border-zinc-600 dark:text-zinc-200"
+        className="ink-field h-20 w-full resize-none p-4 shadow-sm"
         placeholder={labels.taskPlaceholder}
       />
-      <label className="mt-3 flex flex-col text-left text-sm font-medium text-zinc-600 dark:text-zinc-300">
+      <label className="ink-muted mt-3 flex flex-col text-left text-sm font-medium">
         {labels.dueDate}
         <input
           type="date"
           value={dueDateValue}
           onChange={(e) => onDueDateChange && onDueDateChange(e.target.value)}
           disabled={disabled}
-          className="mt-1 border border-zinc-300 px-3 py-2 text-zinc-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200"
+          className="ink-field mt-1 px-3 py-2 shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
         />
       </label>
       <div>
         <button
           onClick={handleAdd}
           disabled={disabled}
-          className="mt-2 px-4 py-2 bg-zinc-400 text-white rounded-md hover:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-50 mr-4 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="ink-button mt-3 mr-4 px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
         >
           {disabled ? (isEditing ? labels.saving : labels.adding) : (isEditing ? labels.save : labels.addTask)}
         </button>
@@ -69,7 +69,7 @@ export default function AddTodo({
           <button
             onClick={onCancel}
             type="button"
-            className="mt-2 px-4 py-2 bg-zinc-200 text-zinc-800 rounded-md hover:bg-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-50"
+            className="ink-button-secondary mt-3 px-4 py-2 text-sm font-semibold transition-colors"
           >
             {labels.cancel}
           </button>

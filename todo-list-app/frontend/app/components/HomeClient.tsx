@@ -276,20 +276,20 @@ export default function HomeClient() {
   };
 
   return (
-    <>
+    <main className="ink-page">
       <div className="mx-auto flex w-full max-w-3xl justify-end px-4 pt-4">
         <button
           type="button"
           onClick={toggleLanguage}
           aria-label={t.switchLanguageLabel}
-          className="border border-zinc-300 bg-white px-3 py-1 text-sm font-semibold text-zinc-700 shadow-sm hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="ink-button-secondary px-3 py-1 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-stone-500"
         >
           {t.switchLanguage}
         </button>
       </div>
-      <h1 className="flex flex-col justify-center p-10 text-center text-4xl font-bold text-zinc-800 dark:text-zinc-200">
+      <h1 className="ink-title flex flex-col justify-center p-10 text-center text-4xl font-bold">
         Todo-list<br />
-        <i>
+        <i className="ink-muted text-lg font-normal">
           <small>{t.welcome}<br />
             {t.motto}</small>
         </i>
@@ -305,45 +305,45 @@ export default function HomeClient() {
         disabled={isLoading}
         isEditing={Boolean(editId)}
       />
-      <div className="mx-auto mt-2 min-h-80 w-full max-w-3xl bg-zinc-50 p-4 shadow-sm dark:bg-zinc-50 dark:border-zinc-50">
-        <h2 className="text-2xl font-semibold mb-6 text-zinc-800 dark:text-zinc-200 text-center">
+      <div className="ink-paper ink-panel mx-auto mt-4 min-h-80 w-full max-w-3xl p-4">
+        <h2 className="relative mb-6 text-center text-2xl font-semibold text-stone-900">
           {t.yourTasks}
         </h2>
-        <div className="mb-4 grid grid-cols-2 gap-2 border border-zinc-200 bg-white p-3 text-sm text-zinc-700 sm:grid-cols-4">
+        <div className="ink-calendar relative mb-4 grid grid-cols-2 gap-2 p-3 text-sm text-stone-800 sm:grid-cols-4">
           <div>
-            <div className="text-xs text-zinc-400">{t.year}</div>
+            <div className="ink-muted text-xs">{t.year}</div>
             <div className="font-semibold">{calendarInfo.year}</div>
           </div>
           <div>
-            <div className="text-xs text-zinc-400">{t.month}</div>
+            <div className="ink-muted text-xs">{t.month}</div>
             <div className="font-semibold">{calendarInfo.month}</div>
           </div>
           <div>
-            <div className="text-xs text-zinc-400">{t.week}</div>
+            <div className="ink-muted text-xs">{t.week}</div>
             <div className="font-semibold">{t.weekPrefix}{calendarInfo.week}{t.weekSuffix}</div>
           </div>
           <div>
-            <div className="text-xs text-zinc-400">{t.solarTerm}</div>
+            <div className="ink-muted text-xs">{t.solarTerm}</div>
             <div className="font-semibold">{calendarInfo.solarTermRange}</div>
           </div>
         </div>
         {hasLoadError && (
-          <div className="mb-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="relative mb-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {t.loadError}
           </div>
         )}
-        <ul className="mx-auto space-y-2">
+        <ul className="relative mx-auto space-y-2">
           {isInitialLoading ? (
-            <li className="p-2 bg-white border border-zinc-300 shadow-sm dark:bg-zinc-800 dark:border-zinc-600">
+            <li className="ink-card p-3 shadow-sm">
               {t.loadingTasks}
             </li>
           ) : todos.length === 0 ? (
-            <li className="p-2 bg-white border border-zinc-300 rounded-md shadow-sm dark:bg-zinc-800 dark:border-zinc-600">
+            <li className="ink-card p-3 shadow-sm">
               {t.noTasks}
             </li>
           ) : (
             todos.map((todo: Todo) => (
-              <li key={todo.todoId} className="mx-auto w-full bg-white p-4 shadow-sm dark:bg-zinc-800 dark:border-zinc-600">
+              <li key={todo.todoId} className="ink-card mx-auto w-full p-4 shadow-sm">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex min-w-0 flex-1 gap-4 items-center">
                     <input
@@ -351,18 +351,18 @@ export default function HomeClient() {
                       checked={todo.isFinished === 1}
                       onChange={() => handleToggleFinished(todo.todoId, todo.isFinished)}
                       disabled={togglingId === todo.todoId}
-                      className="w-5 h-5 cursor-pointer accent-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="h-5 w-5 cursor-pointer accent-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
                     />
                     <div className="min-w-0 flex-1">
-                      <div className={`break-words font-semibold ${todo.isFinished === 1 ? 'line-through text-zinc-400' : ''}`}>
+                      <div className={`break-words font-semibold ${todo.isFinished === 1 ? 'line-through text-stone-400' : 'text-stone-900'}`}>
                         {todo.todoName}
                       </div>
-                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-500">
+                      <div className="ink-muted mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
                         <span>{t.due}: {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : "-"}</span>
                         <span>{t.completed}: {todo.completedAt ? new Date(todo.completedAt).toLocaleDateString() : "-"}</span>
                       </div>
                     </div>
-                    <div className="hidden text-xs sm:block">
+                    <div className="ink-muted hidden text-xs sm:block">
                       {todo.isFinished ? t.finished : t.pending}
                     </div>
                   </div>
@@ -370,7 +370,7 @@ export default function HomeClient() {
                     <button
                       onClick={() => handleView(todo.todoId)}
                       disabled={viewingId === todo.todoId}
-                      className="px-3 py-1 bg-zinc-200 text-zinc-800 text-sm rounded-md hover:bg-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
+                      className="ink-button-secondary px-3 py-1 text-sm transition-colors disabled:opacity-50"
                     >
                       {viewingId === todo.todoId ? t.loading : t.view}
                     </button>
@@ -381,14 +381,14 @@ export default function HomeClient() {
                         setDueDateValue(todo.dueDate ? new Date(todo.dueDate).toISOString().slice(0, 10) : "");
                         // scroll to top or focus could be added
                       }}
-                      className="px-3 py-1 bg-zinc-400 text-white text-sm rounded-md hover:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
+                      className="ink-button px-3 py-1 text-sm transition-colors"
                     >
                       {t.edit}
                     </button>
                     <button
                       onClick={() => handleDelete(todo.todoId, todo.todoName)}
                       disabled={deletingId === todo.todoId}
-                      className="px-3 py-1 bg-zinc-400 text-white text-sm rounded-md hover:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="ink-button ink-button-danger px-3 py-1 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {deletingId === todo.todoId ? t.deleting : t.delete}
                     </button>
@@ -399,6 +399,6 @@ export default function HomeClient() {
           )}
         </ul>
       </div>
-    </>
+    </main>
   );
 }
