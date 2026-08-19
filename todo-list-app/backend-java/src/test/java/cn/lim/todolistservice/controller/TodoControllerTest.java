@@ -44,4 +44,17 @@ class TodoControllerTest {
                 .andExpect(jsonPath("$.code").value(400))
                 .andExpect(jsonPath("$.message").value("todoName cannot be blank"));
     }
+
+    @Test
+    void updateAllowsStatusOnlyRequest() throws Exception {
+        when(todoService.updateTodo(any())).thenReturn(true);
+
+        mockMvc.perform(post("/todo/update/todo-1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"isFinished\":1}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data").value(true))
+                .andExpect(jsonPath("$.message").value("success"));
+    }
 }

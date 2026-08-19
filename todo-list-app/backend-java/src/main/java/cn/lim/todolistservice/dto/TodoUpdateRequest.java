@@ -3,12 +3,10 @@ package cn.lim.todolistservice.dto;
 import cn.lim.todolistservice.entity.Todo;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 
 import java.util.Date;
 
 public class TodoUpdateRequest {
-    @NotBlank(message = "todoName cannot be blank")
     private String todoName;
 
     private Date dueDate;
