@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import AddTodo from "./AddTodo";
 import { addTodo, getTodos, deleteTodo, updateTodo, getTodo } from "../services/todoService";
 import { Todo } from "../types/todo";
+import { getCalendarInfo } from "../lib/calendarInfo";
 
 
 export default function HomeClient() {
@@ -15,6 +16,7 @@ export default function HomeClient() {
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const calendarInfo = getCalendarInfo();
 
   const refreshTodos = useCallback(async () => {
     try {
@@ -172,6 +174,24 @@ export default function HomeClient() {
         <h2 className="text-2xl font-semibold mb-6 text-zinc-800 dark:text-zinc-200 text-center">
           Your Tasks
         </h2>
+        <div className="mb-4 grid grid-cols-2 gap-2 border border-zinc-200 bg-white p-3 text-sm text-zinc-700 sm:grid-cols-4">
+          <div>
+            <div className="text-xs text-zinc-400">Year</div>
+            <div className="font-semibold">{calendarInfo.year}</div>
+          </div>
+          <div>
+            <div className="text-xs text-zinc-400">Month</div>
+            <div className="font-semibold">{calendarInfo.month}</div>
+          </div>
+          <div>
+            <div className="text-xs text-zinc-400">Week</div>
+            <div className="font-semibold">W{calendarInfo.week}</div>
+          </div>
+          <div>
+            <div className="text-xs text-zinc-400">Solar Term</div>
+            <div className="font-semibold">{calendarInfo.solarTermRange}</div>
+          </div>
+        </div>
         {error && (
           <div className="mb-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
