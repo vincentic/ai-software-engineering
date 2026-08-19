@@ -6,7 +6,6 @@ import cn.lim.todolistservice.entity.Todo;
 import cn.lim.todolistservice.entity.ApiResponse;
 import cn.lim.todolistservice.service.TodoService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,9 +14,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/todo")
 public class TodoController {
-    @Autowired
-    private TodoService todoService;
+    private final TodoService todoService;
 
+    public TodoController(TodoService todoService) {
+        this.todoService = todoService;
+    }
 
     @GetMapping("/list")
     public ApiResponse<List<Todo>> list() {
