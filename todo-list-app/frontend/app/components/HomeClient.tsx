@@ -13,6 +13,7 @@ export default function HomeClient() {
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>("");
+  const [dueDateValue, setDueDateValue] = useState<string>("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,18 +68,30 @@ export default function HomeClient() {
     }
   };
 
+  const selectedDueDate = () => {
+    if (!dueDateValue) {
+      return {};
+    }
+
+    return { dueDate: new Date(`${dueDateValue}T12:00:00`).toISOString() };
+  };
+
+  const resetForm = () => {
+    setEditId(null);
+    setEditValue("");
+    setDueDateValue("");
+  };
+
   const handleAdd = async (task: string) => {
     // If editId exists, perform update
     if (editId) {
       try {
         setIsLoading(true);
-        const res = await updateTodo(editId, { todoName: task });
+        const res = await updateTodo(editId, { todoName: task, ...selectedDueDate() });
         if (res.code === 200) {
           const ok = await refreshTodos();
           if (ok) {
-            // clear edit state
-            setEditId(null);
-            setEditValue("");
+            resetForm();
           }
         } else {
           alert("Failed to save changes. Please try again.");
@@ -95,12 +108,12 @@ export default function HomeClient() {
     // Add new todo
     try {
       setIsLoading(true);
-      const result = await addTodo({ todoName: task, isFinished: 0 });
+      const result = await addTodo({ todoName: task, isFinished: 0, ...selectedDueDate() });
       
       if (result.code === 200) {
         // Fetch updated todos list
         await refreshTodos();
-        setEditValue("");
+        resetForm();
       }
     } catch (error) {
       console.error("Error adding task:", error);
@@ -166,7 +179,9 @@ export default function HomeClient() {
         onAdd={handleAdd}
         value={editValue}
         onChange={setEditValue}
-        onCancel={() => { setEditId(null); setEditValue(""); }}
+        dueDateValue={dueDateValue}
+        onDueDateChange={setDueDateValue}
+        onCancel={resetForm}
         disabled={isLoading}
         isEditing={Boolean(editId)}
       />
@@ -243,6 +258,7 @@ export default function HomeClient() {
                       onClick={() => {
                         setEditId(todo.todoId);
                         setEditValue(todo.todoName || "");
+                        setDueDateValue(todo.dueDate ? new Date(todo.dueDate).toISOString().slice(0, 10) : "");
                         // scroll to top or focus could be added
                       }}
                       className="px-3 py-1 bg-zinc-400 text-white text-sm rounded-md hover:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
