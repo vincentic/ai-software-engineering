@@ -7,6 +7,15 @@ interface AddTodoProps {
   onChange?: (val: string) => void;
   dueDateValue?: string;
   onDueDateChange?: (val: string) => void;
+  labels: {
+    taskPlaceholder: string;
+    dueDate: string;
+    addTask: string;
+    adding: string;
+    save: string;
+    saving: string;
+    cancel: string;
+  };
   onCancel?: () => void;
   disabled?: boolean;
   isEditing?: boolean;
@@ -18,6 +27,7 @@ export default function AddTodo({
   onChange,
   dueDateValue = "",
   onDueDateChange,
+  labels,
   onCancel,
   disabled = false,
   isEditing = false,
@@ -35,10 +45,10 @@ export default function AddTodo({
         value={value}
         onChange={(e) => onChange && onChange(e.target.value)}
         className="h-20 w-full resize-none border border-zinc-300 p-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:border-zinc-600 dark:text-zinc-200"
-        placeholder="Write your tasks here..."
+        placeholder={labels.taskPlaceholder}
       />
       <label className="mt-3 flex flex-col text-left text-sm font-medium text-zinc-600 dark:text-zinc-300">
-        Due date
+        {labels.dueDate}
         <input
           type="date"
           value={dueDateValue}
@@ -53,7 +63,7 @@ export default function AddTodo({
           disabled={disabled}
           className="mt-2 px-4 py-2 bg-zinc-400 text-white rounded-md hover:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-50 mr-4 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {disabled ? (isEditing ? "Saving..." : "Adding...") : (isEditing ? "Save" : "Add Task")}
+          {disabled ? (isEditing ? labels.saving : labels.adding) : (isEditing ? labels.save : labels.addTask)}
         </button>
         {isEditing && (
           <button
@@ -61,7 +71,7 @@ export default function AddTodo({
             type="button"
             className="mt-2 px-4 py-2 bg-zinc-200 text-zinc-800 rounded-md hover:bg-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-50"
           >
-            Cancel
+            {labels.cancel}
           </button>
         )}
       </div>

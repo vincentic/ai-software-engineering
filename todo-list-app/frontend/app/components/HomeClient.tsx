@@ -5,8 +5,103 @@ import { addTodo, getTodos, deleteTodo, updateTodo, getTodo } from "../services/
 import { Todo } from "../types/todo";
 import { getCalendarInfo } from "../lib/calendarInfo";
 
+type Language = "zh" | "en";
+
+const translations = {
+  zh: {
+    welcome: "欢迎来到真实世界！",
+    motto: "生活不容易，但你会喜欢它。",
+    switchLanguage: "EN",
+    switchLanguageLabel: "Switch to English",
+    yourTasks: "你的任务",
+    year: "年份",
+    month: "月份",
+    week: "周数",
+    weekPrefix: "第",
+    weekSuffix: "周",
+    solarTerm: "节气范围",
+    loadError: "无法加载任务，请重试。",
+    updateStatusFailed: "更新任务状态失败，请重试。",
+    updateStatusError: "更新任务状态出错，请重试。",
+    saveFailed: "保存修改失败，请重试。",
+    saveError: "更新任务出错，请重试。",
+    deleteConfirm: (todoName: string) => `确定要删除这个任务吗？\n\n"${todoName}"`,
+    deleteFailed: "删除任务失败，请重试。",
+    deleteError: "删除任务出错，请重试。",
+    task: "任务",
+    due: "截止",
+    status: "状态",
+    completed: "完成日期",
+    finished: "已完成",
+    pending: "待完成",
+    taskNotFound: "没有找到任务。",
+    fetchTaskFailed: "获取任务详情失败。",
+    loadingTasks: "正在加载任务...",
+    noTasks: "暂无任务。",
+    loading: "加载中...",
+    view: "查看",
+    edit: "编辑",
+    deleting: "删除中...",
+    delete: "删除",
+    form: {
+      taskPlaceholder: "在这里写下你的任务...",
+      dueDate: "截止日期",
+      addTask: "添加任务",
+      adding: "添加中...",
+      save: "保存",
+      saving: "保存中...",
+      cancel: "取消",
+    },
+  },
+  en: {
+    welcome: "Welcome to the real world!",
+    motto: "Life sucks. You are gonna love it.",
+    switchLanguage: "中文",
+    switchLanguageLabel: "切换到中文",
+    yourTasks: "Your Tasks",
+    year: "Year",
+    month: "Month",
+    week: "Week",
+    weekPrefix: "W",
+    weekSuffix: "",
+    solarTerm: "Solar Term",
+    loadError: "Unable to load tasks. Please try again.",
+    updateStatusFailed: "Failed to update task status. Please try again.",
+    updateStatusError: "Error updating task status. Please try again.",
+    saveFailed: "Failed to save changes. Please try again.",
+    saveError: "Error updating task. Please try again.",
+    deleteConfirm: (todoName: string) => `Are you sure you want to delete this task?\n\n"${todoName}"`,
+    deleteFailed: "Failed to delete task. Please try again.",
+    deleteError: "Error deleting task. Please try again.",
+    task: "Task",
+    due: "Due",
+    status: "Status",
+    completed: "Completed",
+    finished: "Finished",
+    pending: "Pending",
+    taskNotFound: "Task not found.",
+    fetchTaskFailed: "Failed to fetch task details.",
+    loadingTasks: "Loading tasks...",
+    noTasks: "No tasks found.",
+    loading: "Loading...",
+    view: "View",
+    edit: "Edit",
+    deleting: "Deleting...",
+    delete: "Delete",
+    form: {
+      taskPlaceholder: "Write your tasks here...",
+      dueDate: "Due date",
+      addTask: "Add Task",
+      adding: "Adding...",
+      save: "Save",
+      saving: "Saving...",
+      cancel: "Cancel",
+    },
+  },
+} as const;
 
 export default function HomeClient() {
+  const [language, setLanguage] = useState<Language>("zh");
   const [todos, setTodos] = useState<Todo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -16,22 +111,30 @@ export default function HomeClient() {
   const [dueDateValue, setDueDateValue] = useState<string>("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [hasLoadError, setHasLoadError] = useState(false);
   const calendarInfo = getCalendarInfo();
+  const t = translations[language];
 
   const refreshTodos = useCallback(async () => {
     try {
       const updatedTodos = await getTodos();
       if (updatedTodos.code === 200 && Array.isArray(updatedTodos.data)) {
         setTodos(updatedTodos.data);
-        setError(null);
+        setHasLoadError(false);
         return true;
       }
     } catch (err) {
       console.error("Error refreshing todos:", err);
     }
-    setError("Unable to load tasks. Please try again.");
+    setHasLoadError(true);
     return false;
+  }, []);
+
+  useEffect(() => {
+    const savedLanguage = window.localStorage.getItem("todo-language");
+    if (savedLanguage === "zh" || savedLanguage === "en") {
+      setLanguage(savedLanguage);
+    }
   }, []);
 
   useEffect(() => {
@@ -51,6 +154,14 @@ export default function HomeClient() {
     };
   }, [refreshTodos]);
 
+  const toggleLanguage = () => {
+    setLanguage((current) => {
+      const next = current === "zh" ? "en" : "zh";
+      window.localStorage.setItem("todo-language", next);
+      return next;
+    });
+  };
+
   const handleToggleFinished = async (todoId: string, currentStatus: number) => {
     try {
       setTogglingId(todoId);
@@ -58,11 +169,11 @@ export default function HomeClient() {
       if (res.code === 200) {
         await refreshTodos();
       } else {
-        alert("Failed to update task status. Please try again.");
+        alert(t.updateStatusFailed);
       }
     } catch (error) {
       console.error("Error toggling task status:", error);
-      alert("Error updating task status. Please try again.");
+      alert(t.updateStatusError);
     } finally {
       setTogglingId(null);
     }
@@ -94,11 +205,11 @@ export default function HomeClient() {
             resetForm();
           }
         } else {
-          alert("Failed to save changes. Please try again.");
+          alert(t.saveFailed);
         }
       } catch (error) {
         console.error("Error updating task:", error);
-        alert("Error updating task. Please try again.");
+        alert(t.saveError);
       } finally {
         setIsLoading(false);
       }
@@ -124,9 +235,7 @@ export default function HomeClient() {
 
   const handleDelete = async (todoId: string, todoName: string) => {
     // Show confirmation dialog
-    const confirmed = window.confirm(
-      `Are you sure you want to delete this task?\n\n"${todoName}"`
-    );
+    const confirmed = window.confirm(t.deleteConfirm(todoName));
     
     if (!confirmed) return;
 
@@ -138,11 +247,11 @@ export default function HomeClient() {
         // Fetch updated todos list
         await refreshTodos();
       } else {
-        alert("Failed to delete task. Please try again.");
+        alert(t.deleteFailed);
       }
     } catch (error) {
       console.error("Error deleting task:", error);
-      alert("Error deleting task. Please try again.");
+      alert(t.deleteError);
     } finally {
       setDeletingId(null);
     }
@@ -153,14 +262,14 @@ export default function HomeClient() {
       setViewingId(todoId);
       const res = await getTodo(todoId);
       if (res && res.code === 200 && res.data) {
-        const t = res.data;
-        alert(`Task: ${t.todoName}\nDue: ${t.dueDate ? new Date(t.dueDate).toLocaleString() : '-'}\nStatus: ${t.isFinished ? 'Finished' : 'Pending'}\nCompleted: ${t.completedAt ? new Date(t.completedAt).toLocaleString() : '-'}`);
+        const todo = res.data;
+        alert(`${t.task}: ${todo.todoName}\n${t.due}: ${todo.dueDate ? new Date(todo.dueDate).toLocaleString() : '-'}\n${t.status}: ${todo.isFinished ? t.finished : t.pending}\n${t.completed}: ${todo.completedAt ? new Date(todo.completedAt).toLocaleString() : '-'}`);
       } else {
-        alert('Task not found.');
+        alert(t.taskNotFound);
       }
     } catch (err) {
       console.error('Error fetching todo:', err);
-      alert('Failed to fetch task details.');
+      alert(t.fetchTaskFailed);
     } finally {
       setViewingId(null);
     }
@@ -168,11 +277,21 @@ export default function HomeClient() {
 
   return (
     <>
+      <div className="mx-auto flex w-full max-w-3xl justify-end px-4 pt-4">
+        <button
+          type="button"
+          onClick={toggleLanguage}
+          aria-label={t.switchLanguageLabel}
+          className="border border-zinc-300 bg-white px-3 py-1 text-sm font-semibold text-zinc-700 shadow-sm hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {t.switchLanguage}
+        </button>
+      </div>
       <h1 className="flex flex-col justify-center p-10 text-center text-4xl font-bold text-zinc-800 dark:text-zinc-200">
         Todo-list<br />
         <i>
-          <small>Welcome to the real world ! <br />
-            Life sucks. You are gonna love it.</small>
+          <small>{t.welcome}<br />
+            {t.motto}</small>
         </i>
       </h1>
       <AddTodo
@@ -181,45 +300,46 @@ export default function HomeClient() {
         onChange={setEditValue}
         dueDateValue={dueDateValue}
         onDueDateChange={setDueDateValue}
+        labels={t.form}
         onCancel={resetForm}
         disabled={isLoading}
         isEditing={Boolean(editId)}
       />
       <div className="mx-auto mt-2 min-h-80 w-full max-w-3xl bg-zinc-50 p-4 shadow-sm dark:bg-zinc-50 dark:border-zinc-50">
         <h2 className="text-2xl font-semibold mb-6 text-zinc-800 dark:text-zinc-200 text-center">
-          Your Tasks
+          {t.yourTasks}
         </h2>
         <div className="mb-4 grid grid-cols-2 gap-2 border border-zinc-200 bg-white p-3 text-sm text-zinc-700 sm:grid-cols-4">
           <div>
-            <div className="text-xs text-zinc-400">Year</div>
+            <div className="text-xs text-zinc-400">{t.year}</div>
             <div className="font-semibold">{calendarInfo.year}</div>
           </div>
           <div>
-            <div className="text-xs text-zinc-400">Month</div>
+            <div className="text-xs text-zinc-400">{t.month}</div>
             <div className="font-semibold">{calendarInfo.month}</div>
           </div>
           <div>
-            <div className="text-xs text-zinc-400">Week</div>
-            <div className="font-semibold">W{calendarInfo.week}</div>
+            <div className="text-xs text-zinc-400">{t.week}</div>
+            <div className="font-semibold">{t.weekPrefix}{calendarInfo.week}{t.weekSuffix}</div>
           </div>
           <div>
-            <div className="text-xs text-zinc-400">Solar Term</div>
+            <div className="text-xs text-zinc-400">{t.solarTerm}</div>
             <div className="font-semibold">{calendarInfo.solarTermRange}</div>
           </div>
         </div>
-        {error && (
+        {hasLoadError && (
           <div className="mb-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
+            {t.loadError}
           </div>
         )}
         <ul className="mx-auto space-y-2">
           {isInitialLoading ? (
             <li className="p-2 bg-white border border-zinc-300 shadow-sm dark:bg-zinc-800 dark:border-zinc-600">
-              Loading tasks...
+              {t.loadingTasks}
             </li>
           ) : todos.length === 0 ? (
             <li className="p-2 bg-white border border-zinc-300 rounded-md shadow-sm dark:bg-zinc-800 dark:border-zinc-600">
-              No tasks found.
+              {t.noTasks}
             </li>
           ) : (
             todos.map((todo: Todo) => (
@@ -238,12 +358,12 @@ export default function HomeClient() {
                         {todo.todoName}
                       </div>
                       <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-500">
-                        <span>Due: {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : "-"}</span>
-                        <span>Completed: {todo.completedAt ? new Date(todo.completedAt).toLocaleDateString() : "-"}</span>
+                        <span>{t.due}: {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : "-"}</span>
+                        <span>{t.completed}: {todo.completedAt ? new Date(todo.completedAt).toLocaleDateString() : "-"}</span>
                       </div>
                     </div>
                     <div className="hidden text-xs sm:block">
-                      {todo.isFinished ? "Finished" : "Pending"}
+                      {todo.isFinished ? t.finished : t.pending}
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 sm:justify-end">
@@ -252,7 +372,7 @@ export default function HomeClient() {
                       disabled={viewingId === todo.todoId}
                       className="px-3 py-1 bg-zinc-200 text-zinc-800 text-sm rounded-md hover:bg-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-400 transition-colors"
                     >
-                      {viewingId === todo.todoId ? "Loading..." : "View"}
+                      {viewingId === todo.todoId ? t.loading : t.view}
                     </button>
                     <button
                       onClick={() => {
@@ -263,14 +383,14 @@ export default function HomeClient() {
                       }}
                       className="px-3 py-1 bg-zinc-400 text-white text-sm rounded-md hover:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors"
                     >
-                      Edit
+                      {t.edit}
                     </button>
                     <button
                       onClick={() => handleDelete(todo.todoId, todo.todoName)}
                       disabled={deletingId === todo.todoId}
                       className="px-3 py-1 bg-zinc-400 text-white text-sm rounded-md hover:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                      {deletingId === todo.todoId ? "Deleting..." : "Delete"}
+                      {deletingId === todo.todoId ? t.deleting : t.delete}
                     </button>
                   </div>
                 </div>
