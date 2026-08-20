@@ -11,6 +11,13 @@
         WHERE 1=1 AND is_deleted = 0
     </select>
 
+    <select id="selectOwnTaskById">
+        SELECT *
+        FROM todo_list
+        WHERE todo_id = #{todoId}
+          AND is_deleted = 0
+    </select>
+
     <!-- 自定义逻辑删除：将 is_deleted 字段置为 1 -->
     <update id="markDeleted" parameterType="string">
         UPDATE todo_list

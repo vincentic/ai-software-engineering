@@ -39,7 +39,7 @@ public class TodoService extends ServiceImpl<TodoMapper, Todo> {
      * @return 待办项对象
      */
     public Todo getTodoById(String todoId) {
-        return this.getById(todoId);  // 使用 MyBatis Plus 提供的 getById() 方法
+        return this.baseMapper.selectOwnTaskById(todoId);
     }
 
     /**

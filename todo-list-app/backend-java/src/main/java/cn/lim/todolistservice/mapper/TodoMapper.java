@@ -20,6 +20,14 @@ public interface TodoMapper extends BaseMapper<Todo> {
      * @return 结果行数
      */
     List<Todo> selectOwnTasklist();
+
+    /**
+     * 根据 ID 查询未删除的待办项
+     * @param todoId 待办项 ID
+     * @return 未删除的待办项
+     */
+    Todo selectOwnTaskById(@Param("todoId") String todoId);
+
     /**
      * 标记待办项为已删除（逻辑删除）
      * @param todoId 待办项 ID
@@ -36,4 +44,3 @@ public interface TodoMapper extends BaseMapper<Todo> {
     // selectCount - 查询总数
     // 等更多通用方法
 }
-
