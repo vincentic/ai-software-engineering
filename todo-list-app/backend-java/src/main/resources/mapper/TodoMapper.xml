@@ -11,6 +11,26 @@
         WHERE 1=1 AND is_deleted = 0
     </select>
 
+    <select id="selectOwnTaskPage">
+        SELECT *
+        FROM todo_list
+        WHERE is_deleted = 0
+        <if test="keyword != null">
+          AND todo_name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY due_date IS NULL, due_date ASC, todo_id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countOwnTasks">
+        SELECT COUNT(*)
+        FROM todo_list
+        WHERE is_deleted = 0
+        <if test="keyword != null">
+          AND todo_name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+    </select>
+
     <select id="selectOwnTaskById">
         SELECT *
         FROM todo_list

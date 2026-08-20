@@ -1,5 +1,6 @@
 package cn.lim.todolistservice.service;
 
+import cn.lim.todolistservice.dto.TodoPageResponse;
 import cn.lim.todolistservice.entity.Todo;
 import cn.lim.todolistservice.mapper.TodoMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -31,6 +32,24 @@ public class TodoService extends ServiceImpl<TodoMapper, Todo> {
      */
     public List<Todo> getOwnAll() {
         return this.baseMapper.selectOwnTasklist();
+    }
+
+    /**
+     * 分页搜索所有未删除的待办项
+     * @param keyword 搜索关键字
+     * @param page 页码
+     * @param pageSize 每页数量
+     * @return 分页结果
+     */
+    public TodoPageResponse getOwnPage(String keyword, int page, int pageSize) {
+        int safePage = Math.max(page, 1);
+        int safePageSize = Math.min(Math.max(pageSize, 1), 50);
+        int offset = (safePage - 1) * safePageSize;
+        String normalizedKeyword = keyword == null || keyword.trim().isEmpty() ? null : keyword.trim();
+
+        long total = this.baseMapper.countOwnTasks(normalizedKeyword);
+        List<Todo> items = this.baseMapper.selectOwnTaskPage(normalizedKeyword, safePageSize, offset);
+        return new TodoPageResponse(items, total, safePage, safePageSize);
     }
 
     /**

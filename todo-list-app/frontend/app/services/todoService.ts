@@ -1,4 +1,4 @@
-import { Todo, ApiResponse } from "../types/todo";
+import { Todo, ApiResponse, TodoPage } from "../types/todo";
 import { TODO_API } from "../apiConfig";
 
 async function request<T>(url: string, init?: RequestInit): Promise<ApiResponse<T>> {
@@ -12,8 +12,20 @@ async function request<T>(url: string, init?: RequestInit): Promise<ApiResponse<
   return data;
 }
 
-export async function getTodos(): Promise<ApiResponse<Todo[]>> {
-  return request<Todo[]>(TODO_API.list);
+export async function getTodos(params?: { keyword?: string; page?: number; pageSize?: number }): Promise<ApiResponse<TodoPage>> {
+  const searchParams = new URLSearchParams();
+  if (params?.keyword) {
+    searchParams.set("keyword", params.keyword);
+  }
+  if (params?.page) {
+    searchParams.set("page", String(params.page));
+  }
+  if (params?.pageSize) {
+    searchParams.set("pageSize", String(params.pageSize));
+  }
+
+  const query = searchParams.toString();
+  return request<TodoPage>(query ? `${TODO_API.list}?${query}` : TODO_API.list);
 }
 
 export async function getTodo(id: string): Promise<ApiResponse<Todo>> {

@@ -12,3 +12,11 @@ export interface ApiResponse<T> {
   data: T;
   message: string;
 }
+
+export interface TodoPage {
+  items: Todo[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}

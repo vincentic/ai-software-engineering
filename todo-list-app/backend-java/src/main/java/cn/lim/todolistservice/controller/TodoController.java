@@ -1,14 +1,13 @@
 package cn.lim.todolistservice.controller;
 
 import cn.lim.todolistservice.dto.TodoCreateRequest;
+import cn.lim.todolistservice.dto.TodoPageResponse;
 import cn.lim.todolistservice.dto.TodoUpdateRequest;
 import cn.lim.todolistservice.entity.Todo;
 import cn.lim.todolistservice.entity.ApiResponse;
 import cn.lim.todolistservice.service.TodoService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 // Controller 层
 @RestController
@@ -21,8 +20,11 @@ public class TodoController {
     }
 
     @GetMapping("/list")
-    public ApiResponse<List<Todo>> list() {
-        return ApiResponse.success(todoService.getOwnAll());
+    public ApiResponse<TodoPageResponse> list(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        return ApiResponse.success(todoService.getOwnPage(keyword, page, pageSize));
     }
 
     @PostMapping("/add")

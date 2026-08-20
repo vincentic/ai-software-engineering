@@ -22,6 +22,22 @@ public interface TodoMapper extends BaseMapper<Todo> {
     List<Todo> selectOwnTasklist();
 
     /**
+     * 分页搜索未删除的待办项
+     * @param keyword 搜索关键字
+     * @param limit 每页数量
+     * @param offset 偏移量
+     * @return 分页任务
+     */
+    List<Todo> selectOwnTaskPage(@Param("keyword") String keyword, @Param("limit") int limit, @Param("offset") int offset);
+
+    /**
+     * 统计未删除的待办项数量
+     * @param keyword 搜索关键字
+     * @return 总数
+     */
+    long countOwnTasks(@Param("keyword") String keyword);
+
+    /**
      * 根据 ID 查询未删除的待办项
      * @param todoId 待办项 ID
      * @return 未删除的待办项

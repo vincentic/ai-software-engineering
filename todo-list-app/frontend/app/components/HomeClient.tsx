@@ -1,4 +1,5 @@
 "use client";
+import type { FormEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 import AddTodo from "./AddTodo";
 import { addTodo, getTodos, deleteTodo, updateTodo, getTodo } from "../services/todoService";
@@ -22,6 +23,7 @@ const undatedMarker = {
   month: "-",
   date: "-",
 };
+const pageSize = 5;
 
 function toDateMarker(value: string | null) {
   if (!value) {
@@ -95,15 +97,26 @@ export default function HomeClient() {
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [hasLoadError, setHasLoadError] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const calendarInfo = getCalendarInfo();
   const t = translations[language];
   const todoGroups = groupTodosByDueDate(todos, language, t.noDueDate);
+  const pageInfo = t.pageInfo
+    .replace("{page}", String(page))
+    .replace("{totalPages}", String(Math.max(totalPages, 1)));
+  const totalItems = t.totalItems.replace("{total}", String(total));
 
   const refreshTodos = useCallback(async () => {
     try {
-      const updatedTodos = await getTodos();
-      if (updatedTodos.code === 200 && Array.isArray(updatedTodos.data)) {
-        setTodos(updatedTodos.data);
+      const updatedTodos = await getTodos({ keyword: appliedSearch, page, pageSize });
+      if (updatedTodos.code === 200 && updatedTodos.data) {
+        setTodos(updatedTodos.data.items);
+        setTotal(updatedTodos.data.total);
+        setTotalPages(Math.max(updatedTodos.data.totalPages, 1));
         setHasLoadError(false);
         return true;
       }
@@ -112,7 +125,7 @@ export default function HomeClient() {
     }
     setHasLoadError(true);
     return false;
-  }, []);
+  }, [appliedSearch, page]);
 
   useEffect(() => {
     const savedLanguage = window.localStorage.getItem("todo-language");
@@ -177,6 +190,18 @@ export default function HomeClient() {
     setDueDateValue("");
   };
 
+  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setPage(1);
+    setAppliedSearch(searchValue.trim());
+  };
+
+  const clearSearch = () => {
+    setSearchValue("");
+    setAppliedSearch("");
+    setPage(1);
+  };
+
   const handleAdd = async (task: string) => {
     // If editId exists, perform update
     if (editId) {
@@ -207,6 +232,7 @@ export default function HomeClient() {
       
       if (result.code === 200) {
         // Fetch updated todos list
+        setPage(1);
         await refreshTodos();
         resetForm();
       }
@@ -278,21 +304,48 @@ export default function HomeClient() {
             {t.motto}</small>
         </i>
       </h1>
-      <AddTodo
-        onAdd={handleAdd}
-        value={editValue}
-        onChange={setEditValue}
-        dueDateValue={dueDateValue}
-        onDueDateChange={setDueDateValue}
-        labels={t.form}
-        onCancel={resetForm}
-        disabled={isLoading}
-        isEditing={Boolean(editId)}
-      />
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 lg:flex-row lg:items-start">
+        <aside className="ink-paper w-full shrink-0 p-2 lg:sticky lg:top-4 lg:w-44">
+          <button
+            type="button"
+            className="ink-button w-full px-3 py-2 text-left text-sm font-semibold"
+          >
+            {t.taskListTab}
+          </button>
+        </aside>
+        <section className="min-w-0 flex-1">
+          <AddTodo
+            onAdd={handleAdd}
+            value={editValue}
+            onChange={setEditValue}
+            dueDateValue={dueDateValue}
+            onDueDateChange={setDueDateValue}
+            labels={t.form}
+            onCancel={resetForm}
+            disabled={isLoading}
+            isEditing={Boolean(editId)}
+          />
       <div className="ink-paper ink-panel mx-auto mt-4 min-h-80 w-full max-w-3xl p-4">
         <h2 className="relative mb-6 text-center text-2xl font-semibold text-stone-900">
           {t.yourTasks}
         </h2>
+        <form onSubmit={handleSearch} className="relative mb-4 flex flex-col gap-2 sm:flex-row">
+          <input
+            type="search"
+            value={searchValue}
+            onChange={(event) => setSearchValue(event.target.value)}
+            placeholder={t.searchPlaceholder}
+            className="ink-field min-w-0 flex-1 px-3 py-2 text-sm"
+          />
+          <div className="flex gap-2">
+            <button type="submit" className="ink-button px-4 py-2 text-sm font-semibold">
+              {t.search}
+            </button>
+            <button type="button" onClick={clearSearch} className="ink-button-secondary px-4 py-2 text-sm font-semibold">
+              {t.clearSearch}
+            </button>
+          </div>
+        </form>
         <div className="ink-calendar relative mb-4 grid grid-cols-2 gap-2 p-3 text-sm text-stone-800 sm:grid-cols-4">
           <div>
             <div className="ink-muted text-xs">{t.year}</div>
@@ -405,6 +458,29 @@ export default function HomeClient() {
             ))
           )}
         </ul>
+        <div className="relative mt-4 flex flex-col gap-2 border-t border-stone-200 pt-4 text-sm text-stone-700 sm:flex-row sm:items-center sm:justify-between">
+          <div className="ink-muted">{pageInfo} · {totalItems}</div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((current) => Math.max(current - 1, 1))}
+              disabled={page <= 1}
+              className="ink-button-secondary px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {t.previousPage}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage((current) => Math.min(current + 1, Math.max(totalPages, 1)))}
+              disabled={page >= Math.max(totalPages, 1)}
+              className="ink-button-secondary px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {t.nextPage}
+            </button>
+          </div>
+        </div>
+      </div>
+        </section>
       </div>
     </main>
   );

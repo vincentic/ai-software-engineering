@@ -95,12 +95,26 @@ class TodoControllerTest {
         todo.setIsFinished(0);
         todo.setIsDeleted(0);
         todo.setDueDateProvided(true);
-        when(todoService.getOwnAll()).thenReturn(List.of(todo));
+        when(todoService.getOwnPage(null, 1, 10)).thenReturn(new cn.lim.todolistservice.dto.TodoPageResponse(List.of(todo), 1, 1, 10));
 
         mockMvc.perform(get("/todo/list"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(200))
-                .andExpect(jsonPath("$.data[0].todoId").value("todo-1"))
-                .andExpect(jsonPath("$.data[0].dueDateProvided").doesNotExist());
+                .andExpect(jsonPath("$.data.items[0].todoId").value("todo-1"))
+                .andExpect(jsonPath("$.data.items[0].dueDateProvided").doesNotExist());
+    }
+
+    @Test
+    void listAcceptsSearchAndPaginationParams() throws Exception {
+        when(todoService.getOwnPage("github", 2, 5)).thenReturn(new cn.lim.todolistservice.dto.TodoPageResponse(List.of(), 0, 2, 5));
+
+        mockMvc.perform(get("/todo/list")
+                        .param("keyword", "github")
+                        .param("page", "2")
+                        .param("pageSize", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data.page").value(2))
+                .andExpect(jsonPath("$.data.pageSize").value(5));
     }
 }
