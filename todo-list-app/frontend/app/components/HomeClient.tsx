@@ -61,12 +61,12 @@ function formatDateGroupLabel(marker: NonNullable<ReturnType<typeof toDateMarker
   }).format(new Date(marker.timestamp));
 }
 
-function groupTodosByDueDate(todos: Todo[], language: Language, noDueDate: string) {
+function groupTodosByCreatedDate(todos: Todo[], language: Language, noCreatedDate: string) {
   const groups = new Map<string, TodoDateGroup & { timestamp: number }>();
 
   todos.forEach((todo) => {
-    const marker = toDateMarker(todo.dueDate);
-    const key = marker?.key ?? "no-due-date";
+    const marker = toDateMarker(todo.createdAt);
+    const key = marker?.key ?? "no-created-date";
     const existingGroup = groups.get(key);
 
     if (existingGroup) {
@@ -76,7 +76,7 @@ function groupTodosByDueDate(todos: Todo[], language: Language, noDueDate: strin
 
     groups.set(key, {
       key,
-      label: marker ? formatDateGroupLabel(marker, language) : noDueDate,
+      label: marker ? formatDateGroupLabel(marker, language) : noCreatedDate,
       marker: marker ? { year: marker.year, month: marker.month, date: marker.date } : undatedMarker,
       todos: [todo],
       timestamp: marker?.timestamp ?? Number.MAX_SAFE_INTEGER,
@@ -103,7 +103,7 @@ export default function HomeClient() {
   const [totalPages, setTotalPages] = useState(1);
   const calendarInfo = getCalendarInfo();
   const t = translations[language];
-  const todoGroups = groupTodosByDueDate(todos, language, t.noDueDate);
+  const todoGroups = groupTodosByCreatedDate(todos, language, t.noCreatedDate);
   const pageInfo = t.pageInfo
     .replace("{page}", String(page))
     .replace("{totalPages}", String(Math.max(totalPages, 1)));
