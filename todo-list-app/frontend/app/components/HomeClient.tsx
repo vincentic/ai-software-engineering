@@ -1,8 +1,9 @@
 "use client";
 import type { FormEvent } from "react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import AddTodo from "./AddTodo";
-import { addTodo, getTodos, deleteTodo, updateTodo, getTodo } from "../services/todoService";
+import { addTodo, getTodos, deleteTodo, updateTodo } from "../services/todoService";
 import { Todo } from "../types/todo";
 import { getCalendarInfo } from "../lib/calendarInfo";
 import { Language, translations } from "../lib/i18n";
@@ -90,9 +91,7 @@ export default function HomeClient() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [viewingId, setViewingId] = useState<string | null>(null);
-  const [editId, setEditId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState<string>("");
+  const [taskValue, setTaskValue] = useState<string>("");
   const [dueDateValue, setDueDateValue] = useState<string>("");
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -185,8 +184,7 @@ export default function HomeClient() {
   };
 
   const resetForm = () => {
-    setEditId(null);
-    setEditValue("");
+    setTaskValue("");
     setDueDateValue("");
   };
 
@@ -203,29 +201,6 @@ export default function HomeClient() {
   };
 
   const handleAdd = async (task: string) => {
-    // If editId exists, perform update
-    if (editId) {
-      try {
-        setIsLoading(true);
-        const res = await updateTodo(editId, { todoName: task, ...selectedDueDate() });
-        if (res.code === 200) {
-          const ok = await refreshTodos();
-          if (ok) {
-            resetForm();
-          }
-        } else {
-          alert(t.saveFailed);
-        }
-      } catch (error) {
-        console.error("Error updating task:", error);
-        alert(t.saveError);
-      } finally {
-        setIsLoading(false);
-      }
-      return;
-    }
-
-    // Add new todo
     try {
       setIsLoading(true);
       const result = await addTodo({ todoName: task, isFinished: 0, ...selectedDueDate() });
@@ -267,24 +242,6 @@ export default function HomeClient() {
     }
   };
 
-  const handleView = async (todoId: string) => {
-    try {
-      setViewingId(todoId);
-      const res = await getTodo(todoId);
-      if (res && res.code === 200 && res.data) {
-        const todo = res.data;
-        alert(`${t.task}: ${todo.todoName}\n${t.created}: ${todo.createdAt ? new Date(todo.createdAt).toLocaleString() : '-'}\n${t.due}: ${todo.dueDate ? new Date(todo.dueDate).toLocaleString() : '-'}\n${t.status}: ${todo.isFinished ? t.finished : t.pending}\n${t.completed}: ${todo.completedAt ? new Date(todo.completedAt).toLocaleString() : '-'}`);
-      } else {
-        alert(t.taskNotFound);
-      }
-    } catch (err) {
-      console.error('Error fetching todo:', err);
-      alert(t.fetchTaskFailed);
-    } finally {
-      setViewingId(null);
-    }
-  };
-
   return (
     <main className="ink-page">
       <div className="mx-auto flex w-full max-w-3xl justify-end px-4 pt-4">
@@ -316,14 +273,14 @@ export default function HomeClient() {
         <section className="min-w-0 flex-1">
           <AddTodo
             onAdd={handleAdd}
-            value={editValue}
-            onChange={setEditValue}
+            value={taskValue}
+            onChange={setTaskValue}
             dueDateValue={dueDateValue}
             onDueDateChange={setDueDateValue}
             labels={t.form}
             onCancel={resetForm}
             disabled={isLoading}
-            isEditing={Boolean(editId)}
+            isEditing={false}
           />
       <div className="ink-paper ink-panel mx-auto mt-4 min-h-80 w-full max-w-3xl p-4">
         <h2 className="relative mb-6 text-center text-2xl font-semibold text-stone-900">
@@ -424,24 +381,18 @@ export default function HomeClient() {
                             </div>
                           </div>
                           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                            <button
-                              onClick={() => handleView(todo.todoId)}
-                              disabled={viewingId === todo.todoId}
-                              className="ink-button-secondary px-3 py-1 text-sm transition-colors disabled:opacity-50"
+                            <Link
+                              href={`/todo/${todo.todoId}`}
+                              className="ink-button-secondary px-3 py-1 text-sm transition-colors"
                             >
-                              {viewingId === todo.todoId ? t.loading : t.view}
-                            </button>
-                            <button
-                              onClick={() => {
-                                setEditId(todo.todoId);
-                                setEditValue(todo.todoName || "");
-                                setDueDateValue(todo.dueDate ? new Date(todo.dueDate).toISOString().slice(0, 10) : "");
-                                // scroll to top or focus could be added
-                              }}
+                              {t.view}
+                            </Link>
+                            <Link
+                              href={`/todo/${todo.todoId}/edit`}
                               className="ink-button px-3 py-1 text-sm transition-colors"
                             >
                               {t.edit}
-                            </button>
+                            </Link>
                             <button
                               onClick={() => handleDelete(todo.todoId, todo.todoName)}
                               disabled={deletingId === todo.todoId}
