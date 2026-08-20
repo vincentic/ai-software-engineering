@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.Date;
@@ -20,6 +21,7 @@ public class Todo {
     @TableField("due_date")
     private Date dueDate;         // 截止日期
 
+    @JsonIgnore
     @TableField(exist = false)
     private Boolean dueDateProvided; // 更新时是否显式传入截止日期
 
