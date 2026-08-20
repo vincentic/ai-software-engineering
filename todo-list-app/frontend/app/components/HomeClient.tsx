@@ -6,6 +6,83 @@ import { Todo } from "../types/todo";
 import { getCalendarInfo } from "../lib/calendarInfo";
 import { Language, translations } from "../lib/i18n";
 
+type TodoDateGroup = {
+  key: string;
+  label: string;
+  marker: {
+    year: string;
+    month: string;
+    date: string;
+  };
+  todos: Todo[];
+};
+
+const undatedMarker = {
+  year: "-",
+  month: "-",
+  date: "-",
+};
+
+function toDateMarker(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return {
+    key: `${year}-${month}-${day}`,
+    year,
+    month,
+    date: day,
+    timestamp: new Date(Number(year), Number(month) - 1, Number(day)).getTime(),
+  };
+}
+
+function formatDateGroupLabel(marker: NonNullable<ReturnType<typeof toDateMarker>>, language: Language) {
+  if (language === "zh") {
+    return `${marker.year}年${Number(marker.month)}月${Number(marker.date)}日`;
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(marker.timestamp));
+}
+
+function groupTodosByDueDate(todos: Todo[], language: Language, noDueDate: string) {
+  const groups = new Map<string, TodoDateGroup & { timestamp: number }>();
+
+  todos.forEach((todo) => {
+    const marker = toDateMarker(todo.dueDate);
+    const key = marker?.key ?? "no-due-date";
+    const existingGroup = groups.get(key);
+
+    if (existingGroup) {
+      existingGroup.todos.push(todo);
+      return;
+    }
+
+    groups.set(key, {
+      key,
+      label: marker ? formatDateGroupLabel(marker, language) : noDueDate,
+      marker: marker ? { year: marker.year, month: marker.month, date: marker.date } : undatedMarker,
+      todos: [todo],
+      timestamp: marker?.timestamp ?? Number.MAX_SAFE_INTEGER,
+    });
+  });
+
+  return Array.from(groups.values()).sort((a, b) => a.timestamp - b.timestamp);
+}
+
 export default function HomeClient() {
   const [language, setLanguage] = useState<Language>("zh");
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -20,6 +97,7 @@ export default function HomeClient() {
   const [hasLoadError, setHasLoadError] = useState(false);
   const calendarInfo = getCalendarInfo();
   const t = translations[language];
+  const todoGroups = groupTodosByDueDate(todos, language, t.noDueDate);
 
   const refreshTodos = useCallback(async () => {
     try {
@@ -248,58 +326,81 @@ export default function HomeClient() {
               {t.noTasks}
             </li>
           ) : (
-            todos.map((todo: Todo) => (
-              <li key={todo.todoId} className="ink-card mx-auto w-full p-4 shadow-sm">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex min-w-0 flex-1 gap-4 items-center">
-                    <input
-                      type="checkbox"
-                      checked={todo.isFinished === 1}
-                      onChange={() => handleToggleFinished(todo.todoId, todo.isFinished)}
-                      disabled={togglingId === todo.todoId}
-                      className="h-5 w-5 cursor-pointer accent-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className={`break-words font-semibold ${todo.isFinished === 1 ? 'line-through text-stone-400' : 'text-stone-900'}`}>
-                        {todo.todoName}
-                      </div>
-                      <div className="ink-muted mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
-                        <span>{t.due}: {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : "-"}</span>
-                        <span>{t.completed}: {todo.completedAt ? new Date(todo.completedAt).toLocaleDateString() : "-"}</span>
-                      </div>
-                    </div>
-                    <div className="ink-muted hidden text-xs sm:block">
-                      {todo.isFinished ? t.finished : t.pending}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                    <button
-                      onClick={() => handleView(todo.todoId)}
-                      disabled={viewingId === todo.todoId}
-                      className="ink-button-secondary px-3 py-1 text-sm transition-colors disabled:opacity-50"
-                    >
-                      {viewingId === todo.todoId ? t.loading : t.view}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditId(todo.todoId);
-                        setEditValue(todo.todoName || "");
-                        setDueDateValue(todo.dueDate ? new Date(todo.dueDate).toISOString().slice(0, 10) : "");
-                        // scroll to top or focus could be added
-                      }}
-                      className="ink-button px-3 py-1 text-sm transition-colors"
-                    >
-                      {t.edit}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(todo.todoId, todo.todoName)}
-                      disabled={deletingId === todo.todoId}
-                      className="ink-button ink-button-danger px-3 py-1 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {deletingId === todo.todoId ? t.deleting : t.delete}
-                    </button>
-                  </div>
+            todoGroups.map((group) => (
+              <li key={group.key} className="space-y-2">
+                <div className="ink-calendar flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm text-stone-800">
+                  <div className="font-semibold">{group.label}</div>
+                  <div className="ink-muted text-xs">{t.dateGroup} · {group.todos.length}</div>
                 </div>
+                <ul className="space-y-2">
+                  {group.todos.map((todo: Todo) => {
+                    const marker = toDateMarker(todo.dueDate);
+                    const todoMarker = marker ? { year: marker.year, month: marker.month, date: marker.date } : undatedMarker;
+
+                    return (
+                      <li key={todo.todoId} className="ink-card mx-auto w-full p-4 shadow-sm">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="flex min-w-0 flex-1 gap-4 items-center">
+                            <input
+                              type="checkbox"
+                              checked={todo.isFinished === 1}
+                              onChange={() => handleToggleFinished(todo.todoId, todo.isFinished)}
+                              disabled={togglingId === todo.todoId}
+                              className="h-5 w-5 cursor-pointer accent-stone-800 disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                            <div className="grid w-16 shrink-0 grid-cols-1 border border-stone-300 bg-stone-50/70 text-center text-[10px] leading-tight text-stone-700">
+                              <span className="border-b border-stone-200 px-1 py-1">{todoMarker.year}</span>
+                              <span className="border-b border-stone-200 px-1 py-1">{todoMarker.month}</span>
+                              <span className="px-1 py-1 text-sm font-semibold">{todoMarker.date}</span>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className={`break-words font-semibold ${todo.isFinished === 1 ? 'line-through text-stone-400' : 'text-stone-900'}`}>
+                                {todo.todoName}
+                              </div>
+                              <div className="ink-muted mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                                <span>{t.year}: {todoMarker.year}</span>
+                                <span>{t.month}: {todoMarker.month}</span>
+                                <span>{t.date}: {todoMarker.date}</span>
+                                <span>{t.due}: {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : "-"}</span>
+                                <span>{t.completed}: {todo.completedAt ? new Date(todo.completedAt).toLocaleDateString() : "-"}</span>
+                              </div>
+                            </div>
+                            <div className="ink-muted hidden text-xs sm:block">
+                              {todo.isFinished ? t.finished : t.pending}
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                            <button
+                              onClick={() => handleView(todo.todoId)}
+                              disabled={viewingId === todo.todoId}
+                              className="ink-button-secondary px-3 py-1 text-sm transition-colors disabled:opacity-50"
+                            >
+                              {viewingId === todo.todoId ? t.loading : t.view}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditId(todo.todoId);
+                                setEditValue(todo.todoName || "");
+                                setDueDateValue(todo.dueDate ? new Date(todo.dueDate).toISOString().slice(0, 10) : "");
+                                // scroll to top or focus could be added
+                              }}
+                              className="ink-button px-3 py-1 text-sm transition-colors"
+                            >
+                              {t.edit}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(todo.todoId, todo.todoName)}
+                              disabled={deletingId === todo.todoId}
+                              className="ink-button ink-button-danger px-3 py-1 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {deletingId === todo.todoId ? t.deleting : t.delete}
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
               </li>
             ))
           )}
