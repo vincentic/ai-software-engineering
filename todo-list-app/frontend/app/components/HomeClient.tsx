@@ -273,7 +273,7 @@ export default function HomeClient() {
       const res = await getTodo(todoId);
       if (res && res.code === 200 && res.data) {
         const todo = res.data;
-        alert(`${t.task}: ${todo.todoName}\n${t.due}: ${todo.dueDate ? new Date(todo.dueDate).toLocaleString() : '-'}\n${t.status}: ${todo.isFinished ? t.finished : t.pending}\n${t.completed}: ${todo.completedAt ? new Date(todo.completedAt).toLocaleString() : '-'}`);
+        alert(`${t.task}: ${todo.todoName}\n${t.created}: ${todo.createdAt ? new Date(todo.createdAt).toLocaleString() : '-'}\n${t.due}: ${todo.dueDate ? new Date(todo.dueDate).toLocaleString() : '-'}\n${t.status}: ${todo.isFinished ? t.finished : t.pending}\n${t.completed}: ${todo.completedAt ? new Date(todo.completedAt).toLocaleString() : '-'}`);
       } else {
         alert(t.taskNotFound);
       }
@@ -387,7 +387,7 @@ export default function HomeClient() {
                 </div>
                 <ul className="space-y-2">
                   {group.todos.map((todo: Todo) => {
-                    const marker = toDateMarker(todo.dueDate);
+                    const marker = toDateMarker(todo.createdAt);
                     const todoMarker = marker ? { year: marker.year, month: marker.month, date: marker.date } : undatedMarker;
 
                     return (
@@ -414,6 +414,7 @@ export default function HomeClient() {
                                 <span>{t.year}: {todoMarker.year}</span>
                                 <span>{t.month}: {todoMarker.month}</span>
                                 <span>{t.date}: {todoMarker.date}</span>
+                                <span>{t.created}: {todo.createdAt ? new Date(todo.createdAt).toLocaleDateString() : "-"}</span>
                                 <span>{t.due}: {todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : "-"}</span>
                                 <span>{t.completed}: {todo.completedAt ? new Date(todo.completedAt).toLocaleDateString() : "-"}</span>
                               </div>

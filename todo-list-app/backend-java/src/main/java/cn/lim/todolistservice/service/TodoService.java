@@ -67,6 +67,9 @@ public class TodoService extends ServiceImpl<TodoMapper, Todo> {
      * @return 是否成功
      */
     public boolean addTodo(Todo todo) {
+        if (todo.getCreatedAt() == null) {
+            todo.setCreatedAt(new Date());
+        }
         if (Integer.valueOf(1).equals(todo.getIsFinished())) {
             todo.setCompletedAt(new Date());
         }

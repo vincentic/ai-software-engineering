@@ -2,6 +2,7 @@ export interface Todo {
   todoId: string;
   todoName: string;
   dueDate: string | null;
+  createdAt: string | null;
   isFinished: number;
   completedAt: string | null;
   isDeleted: number;

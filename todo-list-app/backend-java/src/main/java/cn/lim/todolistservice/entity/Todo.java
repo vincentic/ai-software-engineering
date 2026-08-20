@@ -21,6 +21,9 @@ public class Todo {
     @TableField("due_date")
     private Date dueDate;         // 截止日期
 
+    @TableField("created_at")
+    private Date createdAt;       // 创建时间
+
     @JsonIgnore
     @TableField(exist = false)
     private Boolean dueDateProvided; // 更新时是否显式传入截止日期

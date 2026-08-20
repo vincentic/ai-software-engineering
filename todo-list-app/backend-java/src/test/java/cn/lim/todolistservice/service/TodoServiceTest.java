@@ -46,4 +46,21 @@ class TodoServiceTest {
         verify(todoMapper).countOwnTasks("github");
         verify(todoMapper).selectOwnTaskPage("github", 50, 0);
     }
+
+    @Test
+    void addTodoSetsCreatedAtWhenMissing() {
+        TodoMapper todoMapper = mock(TodoMapper.class);
+        TodoService todoService = new TodoService();
+        ReflectionTestUtils.setField(todoService, "baseMapper", todoMapper);
+        when(todoMapper.insert(org.mockito.ArgumentMatchers.any(Todo.class))).thenReturn(1);
+
+        Todo todo = new Todo();
+        todo.setTodoName("Write tests");
+        todo.setIsFinished(0);
+
+        boolean result = todoService.addTodo(todo);
+
+        assertThat(result).isTrue();
+        assertThat(todo.getCreatedAt()).isNotNull();
+    }
 }
